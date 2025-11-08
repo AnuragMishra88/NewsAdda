@@ -1,38 +1,96 @@
+/* Global Styles */
+body {
+  margin: 0;
+  font-family: "Poppins", "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #f1f1f1;
+  min-height: 100vh;
+}
+
+/* App Container */
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Header Title */
+h1 {
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  letter-spacing: 1px;
+  margin-bottom: 30px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Navbar (from Bootstrap override) */
+.navbar {
+  background: #111 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.navbar-brand {
+  font-weight: 700;
+  color: #00adb5 !important;
+  letter-spacing: 0.5px;
+}
+
+.nav-link {
+  color: #ddd !important;
+  transition: 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #00adb5 !important;
+}
+
+/* News Cards */
+.card {
+  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+/* Buttons */
+.btn-dark {
+  background-color: #00adb5 !important;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-dark:hover {
+  background-color: #06bcc1 !important;
+  transform: translateY(-2px);
+}
+
+/* Spinner (centered loading animation) */
+.spinner-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  height: 60vh;
 }
 
-.App-link {
-  color: #61dafb;
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Links */
+a {
+  text-decoration: none;
+}
+
+/* Footer (if added) */
+footer {
+  color: #ccc;
+  font-size: 14px;
+  margin-top: 40px;
+  padding-bottom: 10px;
+  text-align: center;
 }
