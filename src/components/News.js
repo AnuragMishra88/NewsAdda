@@ -5,15 +5,9 @@ import PropTypes from "prop-types";
 
 export class News extends Component {
   static defaultProps = {
-    pageSize: 8,
+    pageSize: 9,
     country: "us",
     category: "general",
-  };
-
-  static propTypes = {
-    country: PropTypes.string,
-    pageSize: PropTypes.number,
-    category: PropTypes.string,
   };
 
   constructor() {
@@ -27,11 +21,28 @@ export class News extends Component {
     };
   }
 
-  // Helper method to build URL
+  // Guardian API - COMPLETELY FREE, NO API KEY NEEDED
   buildUrl = (page) => {
-    const apiKey = process.env.REACT_APP_NEWS_API_KEY;
-    console.log("API Key being used:", apiKey ? "Present" : "Missing"); // Debug
-    return `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${apiKey}&page=${page}&pageSize=${this.props.pageSize}`;
+    const categoryMap = {
+      general: '',
+      business: 'business',
+      entertainment: 'culture',
+      health: 'society',
+      science: 'science',
+      sports: 'sport',
+      technology: 'technology'
+    };
+
+    const category = categoryMap[this.props.category] || '';
+    const pageSize = this.props.pageSize;
+    
+    let url = `https://content.guardianapis.com/search?api-key=test&show-fields=thumbnail,headline,trailText,byline&page-size=${pageSize}&page=${page}`;
+    
+    if (category) {
+      url += `&section=${category}`;
+    }
+    
+    return url;
   };
 
   async componentDidMount() {
@@ -47,51 +58,42 @@ export class News extends Component {
   fetchNews = async (page) => {
     this.setState({ loading: true, error: null });
     
-    // Check if API key is available
-    if (!process.env.REACT_APP_NEWS_API_KEY) {
-      this.setState({ 
-        loading: false, 
-        error: "API key is missing. Please check your .env file." 
-      });
-      return;
-    }
-    
     try {
       let url = this.buildUrl(page);
-      console.log("API URL:", url.replace(process.env.REACT_APP_NEWS_API_KEY, 'HIDDEN')); // Hide key in logs
-      
       let response = await fetch(url);
       
-      if (response.status === 401) {
-        throw new Error("Invalid API Key. Please check your NewsAPI key.");
-      }
-      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Failed to load news: ${response.status}`);
       }
       
       let parsedata = await response.json();
       
-      if (parsedata.status === "error") {
-        throw new Error(parsedata.message || "API Error");
-      }
-      
-      if (parsedata.articles && Array.isArray(parsedata.articles)) {
+      if (parsedata.response && parsedata.response.results) {
+        const articles = parsedata.response.results.map(item => ({
+          title: item.fields?.headline || item.webTitle,
+          description: item.fields?.trailText || 'Click to read more...',
+          url: item.webUrl,
+          urlToImage: item.fields?.thumbnail,
+          publishedAt: item.webPublicationDate,
+          author: item.fields?.byline || 'The Guardian',
+          source: { name: 'The Guardian' }
+        }));
+        
         this.setState({
-          articles: parsedata.articles,
-          totalresult: parsedata.totalResults || 0,
+          articles: articles,
+          totalresult: parsedata.response.total || 0,
           loading: false,
         });
       } else {
-        throw new Error("No articles found in response");
+        throw new Error("No articles found");
       }
       
     } catch (error) {
-      console.error("Error fetching news:", error);
+      console.error("Error:", error);
       this.setState({ 
         articles: [],
         loading: false,
-        error: error.message
+        error: "Failed to load news. Please try again later."
       });
     }
   };
@@ -117,20 +119,11 @@ export class News extends Component {
     
     return (
       <div className="container my-3">
-        <h1 className="text-center my-4">NewsAdda HEADLINES</h1>
+        <h1 className="text-center my-4">NewsAdda - Top Headlines</h1>
         
         {error && (
-          <div className="alert alert-danger text-center" role="alert">
-            <strong>Error:</strong> {error}
-            <br />
-            <small>
-              Steps to fix:
-              <ul className="text-start">
-                <li>Get a free API key from newsapi.org</li>
-                <li>Add REACT_APP_NEWS_API_KEY=your_key to .env file</li>
-                <li>Restart your development server</li>
-              </ul>
-            </small>
+          <div className="alert alert-warning text-center" role="alert">
+            {error}
           </div>
         )}
         
@@ -138,24 +131,24 @@ export class News extends Component {
         
         <div className="row">
           {!loading && !error && articles.length > 0 ? (
-            articles.map((element) => (
-              <div className="col-md-4" key={element.url || Math.random()}>
+            articles.map((element, index) => (
+              <div className="col-md-4 mb-4" key={element.url || index}>
                 <NewsItems
-                  title={element.title || ""}
-                  description={element.description || ""}
+                  title={element.title}
+                  description={element.description}
                   imageurl={element.urlToImage}
                   newsurl={element.url}
-                  publishedAt={element.publishedAt ? new Date(element.publishedAt).toGMTString() : "Unknown date"}
-                  By={element.author || "Unknown"}
-                  source={element.source?.name || "Unknown source"}
+                  publishedAt={new Date(element.publishedAt).toGMTString()}
+                  By={element.author}
+                  source={element.source.name}
                 />
               </div>
             ))
-          ) : !loading && !error && (
+          ) : !loading && !error ? (
             <div className="col-12 text-center">
               <p>No articles found.</p>
             </div>
-          )}
+          ) : null}
         </div>
         
         {!error && articles.length > 0 && (
